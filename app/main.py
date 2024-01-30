@@ -1,7 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form, Header
 from enum import Enum
+from typing import Annotated
 
 app = FastAPI()
+
+fake_items_db = [{"item_name": "Foo"}, {"item_name": "Bar"}, {"item_name": "Baz"}]
+
+
+@app.post("/form/lp1")
+async def form_lp1(
+    name: Annotated[str, Form()], 
+    phone: Annotated[str, Form()], 
+    allow_origin: Annotated[str | None, Header()]=None):
+    return {'name': name, 'phone': phone, "Access-Control-Allow-Origin": allow_origin}
+
 
 @app.get("/")
 async def root():
@@ -16,10 +28,14 @@ async def read_user_me():
 async def read_user(user_id: int):
     return {'user_id': user_id}
 
+@app.get("/items/")
+async def read_item_skip(skip: int = 0, limit: int = 10):
+    return fake_items_db[skip : skip + limit]
 
 @app.get("/items/{item_id}")
 async def read_item(item_id: int):
     return {'item_id':item_id}
+
 
 class ModelName(str, Enum):
     alexnet = "alexnet"
@@ -39,3 +55,5 @@ async def get_model(model_name: ModelName):
 @app.get("/files/{file_path:path}")
 async def read_file(file_path: str):
     return {"file_path":file_path}
+
+
